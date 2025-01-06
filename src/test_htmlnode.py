@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -50,6 +50,25 @@ class TestHTMLNode(unittest.TestCase):
             "HTMLNode(p, What a strange world, None, {'class': 'primary'})",
         )
 
-    
+class TestParentNode(unittest.TestCase):
+    def test_basic_parent_node(self):
+        node = ParentNode(
+            "p",
+            [LeafNode(None, "Hello")]
+        )
+        self.assertEqual(node.to_html(), "<p>Hello</p>")
+
+    def test_missing_tag_raises_error(self):
+        with self.assertRaises(ValueError):
+            node = ParentNode(None, [LeafNode(None, "Hello")])
+            node.to_html()
+
+    def test_nested_parent_nodes(self):
+        child_node = ParentNode("span", [LeafNode(None, "Hello")])
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(parent_node.to_html(), "<div><span>Hello</span></div>")
+
+
+
 if __name__ == "__main__":
     unittest.main()
