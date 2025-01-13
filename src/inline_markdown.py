@@ -50,14 +50,14 @@ def split_nodes_link(old_nodes):
             if len(sections) != 2:
                 raise ValueError("invalid Markdown")
             if sections[0] != "":
-                new_nodes.append(TextNode(sections[0])) #push text before link
+                new_nodes.append(TextNode(sections[0], TextType.NORMAL)) #push text before link #push text before link
             new_nodes.append(TextNode(link[0], TextType.LINK, link[1])) #push the link node
             original_text = sections[1]
         
         if original_text != "":
             new_nodes.append(TextNode(original_text, TextType.NORMAL))
         
-        return new_nodes
+    return new_nodes
 
 def split_nodes_image(old_nodes):
     new_nodes = []
@@ -85,7 +85,7 @@ def split_nodes_image(old_nodes):
             )
             original_text = sections[1]
         if original_text != "":
-            new_nodes.append(TextNode(original_text, TextType.TEXT))
+            new_nodes.append(TextNode(original_text, TextType.NORMAL))
     return new_nodes
 
 def text_to_textnodes(text):

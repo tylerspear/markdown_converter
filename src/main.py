@@ -1,10 +1,22 @@
 from textnode import TextNode, TextType
+from block_markdown import generate_page
 import shutil
 import os
 
 
 def main():
+    clear_public()
     clean_and_copy('static', 'public')
+    generate_page(
+        "content/index.md",        # from_path (your markdown file)
+        "template.html",           # template_path (your HTML template)
+        "public/index.html"        # dest_path (where to save the final HTML)
+    )
+
+def clear_public():
+    if os.path.exists('public'):
+        shutil.rmtree('public')
+    os.makedirs('public')
 
 def clean_and_copy(source_dir, dest_dir):
     # Ensure destination directory exists, if not, create it

@@ -1,6 +1,7 @@
-from htmlnode import HTMLNode
+from htmlnode import HTMLNode, ParentNode
 from textnode import text_node_to_html_node
 from inline_markdown import text_to_textnodes
+import os
 
 block_type_paragraph = "paragraph"
 block_type_heading = "heading"
@@ -24,7 +25,7 @@ def block_to_block_type(block):
 
     if block.startswith(("# ", "## ", "### ", "#### ", "##### ", "###### ")):
         return 'heading'
-    if len(lines) > 1 and lines[0].startswith("```") and and lines[-1].startswith("```"):
+    if len(lines) > 1 and lines[0].startswith("```") and lines[-1].startswith("```"):
         return "code"
     if block.startswith(">"):
         for line in lines:
@@ -56,7 +57,7 @@ def markdown_to_html_node(markdown):
     children = []
 
     for block in blocks:
-        html_node = block_to_block_type(block)
+        html_node = block_to_html_node(block)  # Use this instead
         children.append(html_node)
     return ParentNode("div", children, None)
 
@@ -146,4 +147,32 @@ def quote_to_html_node(block):
         new_lines.append(line.lstrip(">").strip())
     content = " ".join(new_lines)
     children = text_to_children(content)
-    return ParentNode("blockquote", children)       
+    return ParentNode("blockquote", children)
+
+def extract_title(markdown):
+    markdown = markdown.split('\n')
+
+    for line in markdown:
+        if line.startswith('#') and line.count('#') == 1:
+            return line.split('#')[1].strip() 
+    raise Exception("No heading provided in file")
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    
+    with open(from_path) as ffile:
+        from_content = ffile.read()
+        html_mode = markdown_to_html_node(from_content).to_html()
+    
+    with open(template_path) as tfile:
+        template_content = tfile.read()
+        title = extract_title(from_content)
+        new_content = template_content.replace('{{ Title }}', title)
+        new_content = new_content.replace('{{ Content }}', html_mode)
+    
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    with open(dest_path ,'w') as dest:
+        dest.write(new_content)
+
+        
+        
