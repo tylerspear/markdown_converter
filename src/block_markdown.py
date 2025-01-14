@@ -2,6 +2,7 @@ from htmlnode import HTMLNode, ParentNode
 from textnode import text_node_to_html_node
 from inline_markdown import text_to_textnodes
 import os
+from pathlib import Path
 
 block_type_paragraph = "paragraph"
 block_type_heading = "heading"
@@ -162,17 +163,50 @@ def generate_page(from_path, template_path, dest_path):
     
     with open(from_path) as ffile:
         from_content = ffile.read()
-        html_mode = markdown_to_html_node(from_content).to_html()
+        html_node = markdown_to_html_node(from_content).to_html()
     
     with open(template_path) as tfile:
         template_content = tfile.read()
         title = extract_title(from_content)
         new_content = template_content.replace('{{ Title }}', title)
-        new_content = new_content.replace('{{ Content }}', html_mode)
+        new_content = new_content.replace('{{ Content }}', html_node)
     
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     with open(dest_path ,'w') as dest:
         dest.write(new_content)
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    try:
+        files = os.listdir(dir_path_content)
+
+        with open(template_path) as tfile:
+            template_content = tfile.read()
+
+        for file in files:
+            full_path = os.path.join(dir_path_content, file)
+            if os.path.isfile(full_path) and file.endswith('.md'):
+                with open(full_path) as read_file:
+                    content = read_file.read()
+                    html_node = markdown_to_html_node(content).to_html()
+                    title = extract_title(content)
+                    
+                    new_content = template_content.replace('{{ Title }}', title)
+                    new_content = new_content.replace('{{ Content }}', html_node)
+                    
+                    relative_path = os.path.relpath(full_path, dir_path_content)
+                    destination_path = os.path.join(dest_dir_path, os.path.dirname(relative_path))
+                    
+                    os.makedirs(destination_path, exist_ok=True)
+                    with open(os.path.join(destination_path, file.replace('.md', '.html')), 'w') as outfile:                        
+                        print(f"Calculated destination path: {destination_path}")
+                        outfile.write(new_content)
+
+            elif os.path.isdir(full_path):
+                generate_pages_recursive(full_path, template_path, os.path.join(dest_dir_path, file))
+
+    except FileNotFoundError:
+        print(f"Error: Directory '{dir_path_content}' not found.")
+
 
         
         

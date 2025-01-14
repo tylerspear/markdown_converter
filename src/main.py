@@ -1,5 +1,5 @@
 from textnode import TextNode, TextType
-from block_markdown import generate_page
+from block_markdown import generate_page, generate_pages_recursive
 import shutil
 import os
 
@@ -7,10 +7,10 @@ import os
 def main():
     clear_public()
     clean_and_copy('static', 'public')
-    generate_page(
-        "content/index.md",        # from_path (your markdown file)
+    generate_pages_recursive(
+        "content",        # from_path (your markdown file)
         "template.html",           # template_path (your HTML template)
-        "public/index.html"        # dest_path (where to save the final HTML)
+        "public"        # dest_path (where to save the final HTML)
     )
 
 def clear_public():
